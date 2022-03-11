@@ -5,6 +5,7 @@ dfa = pd.read_excel(r'C:\Users\will simpkins\Documents\Engineering Mathematics\T
 testdata=dfa[:100]
 sales_rate_multipliers=dfa.loc[:,'sales_rate_multiplier']
 num_companies=dfa.loc[:,'num_companies']
+print(dfa)
 ###################################################################
 #Setting Constants
 #Depreciation of advert effectivness
@@ -25,7 +26,8 @@ def data_clean(sales_rate_multipliers,num_companies):
     k=1
     l=0
     new_clean_data = clean_sales_rate
-    while k>0:
+    b=M/len(new_clean_data)+(1/(len(new_clean_data)*np.log(r)))*np.sum(np.log(new_clean_data))
+    while np.any(new_clean_data)<np.exp(-b/a):
         l=l+1
         b=M/len(new_clean_data)+(1/(len(new_clean_data)*np.log(r)))*np.sum(np.log(new_clean_data))
         new_new_clean_data = np.array([])
@@ -41,16 +43,18 @@ def data_clean(sales_rate_multipliers,num_companies):
     k=0
     for i in range(len(new_clean_data)):
         n=len(np.where(true_sales_rate==new_clean_data[i])[0])
-        print(np.where(true_sales_rate==new_clean_data[i])[0])
-        print(np.where(true_sales_rate==new_clean_data[i])[0][k])
-        print(k)
-        print(n)
-        new_index[i]=np.where(true_sales_rate==new_clean_data[i])[0][k]
-        k=k+1
-        if k==n:
-            k=0
+        #print(np.where(true_sales_rate==new_clean_data[i])[0])
+        #print(np.where(true_sales_rate==new_clean_data[i])[0][k])
+        #print(k)
+        #print(n)
+        #new_index[i]=np.where(true_sales_rate==new_clean_data[i])[0][k]
+        #k=k+1
+        #if k==n:
+        #    k=0
     new_index=np.array(new_index,dtype=int)
     return new_clean_data, new_index
+new_clean_data, new_index = data_clean(sales_rate_multipliers,num_companies)
+print(len(new_clean_data))
 #Now using my formulas to find the optimum number of adverts for each location
 def Optimum_adverts_fun(sales_rate_multiplier,num_companies,r,M):
     clean_sales_rate, index_sales_rate=data_clean(sales_rate_multiplier,num_companies)
@@ -59,9 +63,13 @@ def Optimum_adverts_fun(sales_rate_multiplier,num_companies,r,M):
     a=-1/np.log(r)
     b=M/N-(a/N)*np.sum(log_sales_rate)
     Optimum_ads_num=np.zeros(N)
-    Optimum_ads_num=b+a*log_sales_rate
-    total_profit=(1/(1-r))*np.sum(clean_sales_rate)-((N*r**b)/(1-r))
-    return Optimum_ads_num, index_sales_rate, total_profit
+    profit_from_loc=np.zeros(N)
+    Optimum_ads_num=np.round(b+a*log_sales_rate)
+    profit_from_loc=(1/(1-r))*clean_sales_rate*(1-r**Optimum_ads_num)
+    total_profit=np.sum(profit_from_loc)
+    return Optimum_ads_num, index_sales_rate, profit_from_loc, total_profit
+Optimum_ads_num, index_sales_rate, profit_from_loc, total_profit = Optimum_adverts_fun(sales_rate_multipliers,num_companies,r,M)
+print(np.sum(Optimum_ads_num))
 #And now one to get the indexs back to the whole data set
 def allocate_advert_num(sales_rate_multiplier,num_companies,r,M):
     Optimum_ads_num, index_sales_rate, total_profit = Optimum_adverts_fun(sales_rate_multiplier,num_companies,r,M)
@@ -71,11 +79,11 @@ def allocate_advert_num(sales_rate_multiplier,num_companies,r,M):
     for i in range(len(index_sales_rate)):
         advert_num[index_sales_rate[i]]=int(Optimum_ads_round[i])
     return advert_num, total_profit
-advert_num, index_sales_rate, total_profit = Optimum_adverts_fun(sales_rate_multipliers,num_companies,r,M)
-a=np.where(index_sales_rate==298)
-print(index_sales_rate[280:300])
-print(a)
-print(advert_num[a])
+#advert_num, index_sales_rate, total_profit = Optimum_adverts_fun(sales_rate_multipliers,num_companies,r,M)
+#a=np.where(index_sales_rate==298)
+#print(index_sales_rate[280:300])
+#print(a)
+#print(advert_num[a])
 #Now we return our data to a data frame in order to pass it back into a spreadsheet
 def Make_df(sales_rate_multipliers,num_companies,r,M):
     true_sales_rate=sales_rate_multipliers*num_companies
@@ -83,8 +91,8 @@ def Make_df(sales_rate_multipliers,num_companies,r,M):
     df = pd.DataFrame({'Sales Rate Multipliers':sales_rate_multipliers,'Number of Companies':num_companies,'True Sales Rate':true_sales_rate,'Optimum Number Of Adverts':advert_num})
     return df, total_profit
 #Now we export the data back into a spread sheet
-df, total_profit = Make_df(sales_rate_multipliers,num_companies,r,M)
-df.to_excel('./datafinal.xlsx')
+#df, total_profit = Make_df(sales_rate_multipliers,num_companies,r,M)
+#df.to_excel('./datafinal.xlsx')
 
 
 
