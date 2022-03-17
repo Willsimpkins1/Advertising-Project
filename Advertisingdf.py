@@ -91,9 +91,7 @@ def Optimum_adverts_fun(dfa,M):
     b = M/N - (a/N) * np.sum(log_sales_rate)
 
     #Now we create a new column in our data set with the optimum number of adverts and round this number down for each value
-    dfnew["Optimum_ads_num_real"] = b+a*log_sales_rate
     dfnew["Optimum_ads_num"] = np.floor(b+a*log_sales_rate)
-    dfnew["log_sales_rate"] = log_sales_rate
 
     return dfnew
 
@@ -135,16 +133,7 @@ def Extra_ads(dfa,M):
     dfnew.drop("excess_col", axis=1, inplace=True)
 
     return dfnew
-dfnew = Extra_ads(dfa,M)
-#dfnew.to_excel(r'C:\Users\will simpkins\Documents\Engineering Mathematics\Term 2\data\datafinal_clean_diff.xlsx', index=False)
-ax = plt.axes()
-plt.plot(dfnew["log_sales_rate"],dfnew["Optimum_ads_num"],"-r",label = 'Rounded Optimum Adverts Number')
-plt.plot(dfnew["log_sales_rate"],dfnew["Optimum_ads_num_real"],"-b",label = 'Real Number Of Optimum Adverts')
-ax.legend()
-ax.set_xlabel("Log of the true sales rate")
-ax.set_ylabel("Number of adverts")
-plt.legend
-plt.show()
+
 
 def present_df(dfa,M):
     """ Algorithm for turning our data frame into a more readable form, with an extra column for the profit
@@ -176,7 +165,7 @@ def present_df(dfa,M):
     dforigional["True Sales Rate"] = dforigional["sales_rate_multiplier"]*dforigional["num_companies"]
     dforigional["Optimum_ads_num"] = np.zeros(len(dforigional["num_companies"]))
     dforigional["Profit From Loc"] = np.zeros(len(dforigional["num_companies"]))
-    dforigional["Optimum_ads_num_real"] = np.zeros(len(dforigional["num_companies"]))
+    dforigional["Profit Real"] = np.zeros(len(dforigional["num_companies"]))
 
     #Then we concat these two data frames deleting the repeated rows 
     dfinal = pd.concat([dforigional, dfin]).sort_values('Optimum_ads_num',ascending=False).drop_duplicates('Unnamed: 0')
@@ -187,9 +176,9 @@ def present_df(dfa,M):
     #Then we add a pound symbol to our profits and round them to the closest penny to make it clear they are an amount of money
     #WARNING: sometimes this loop can return an error "A value is trying to be set on a copy of a slice from a DataFrame" but this can be ignored
     # or the loop can be removed if needed
-    for i in range(len(dfinal["Optimum_ads_num"])):
+    # for i in range(len(dfinal["Optimum_ads_num"])):
 
-        dfinal["Profit From Loc"][i] = '£'+str(np.round(dfinal["Profit From Loc"][i],2))
+    #     dfinal["Profit From Loc"][i] = '£'+str(np.round(dfinal["Profit From Loc"][i],2))
 
     #Then we rename our columns to make them more user freindly
     dfinal.rename(columns={'Unnamed: 0': 'Location Number',\
@@ -199,8 +188,11 @@ def present_df(dfa,M):
                            'Profit From Loc':'Expected Profits'},\
                             inplace=True)
 
+    dfinal = dfinal[["Location Number","Sales Rates","Number Of Companies","True Sales Rate","Optimum Number Of Ads","Expected Profits"]]
+
     return dfinal
 
-#Then we return our data frame to an excel sheet
-#dfinal= present_df(dfa,M)
-#dfinal.to_excel(r'C:\Users\will simpkins\Documents\Engineering Mathematics\Term 2\data\datafinal.xlsx', index=False)
+#Now we return the data set to a excel sheet
+dfinal = present_df(dfa,M)
+
+dfinal.to_excel(r'C:\Users\will simpkins\Documents\Engineering Mathematics\Term 2\data\datafinala.xlsx', index=False)

@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 dfr = pd.read_excel(r'C:\Users\will simpkins\Documents\Engineering Mathematics\Term 2\data\client_a_data_workr.xlsx')
 ###################################################################
 #Number of adverts available
@@ -100,7 +101,7 @@ def Optimum_ads_func(df):
     Parameters 
     ----------
     df : data frame
-        data frame o data points as read from excel
+        data frame of data points as read from excel
 
     returns
     -------
@@ -116,7 +117,7 @@ def Optimum_ads_func(df):
     b, a = aibi(df.loc[:,"True Sales Rate"],df.loc[:,"r"],M)
 
     #Then we use these to set the optimum number of adverts at each location
-    df["Optimum_Ads_Num"] = np.floor(b-a*np.log(df.loc[:,"True Sales Rate"]))#
+    df["Optimum_Ads_Num"] = np.floor(b-a*np.log(df.loc[:,"True Sales Rate"]))
 
     return df
 
@@ -155,6 +156,8 @@ def excess_ads(df,M):
     df.sort_index()
     df.drop("excess_col", axis=1, inplace=True)
 
+    df["Profit Rounded"]=(1 / (1 - df["r"])) * df["True Sales Rate"] * (1 - df["r"] ** df["Optimum_Ads_Num"])
+
     return df
 
 
@@ -179,7 +182,7 @@ def present_df(dfa,M):
     dfin = excess_ads(dfa,M)
 
     #Then we assign the profit for each location
-    dfin["Profit From Loc"] = (1 / (1 - dfin["r"])) * dfin["True Sales Rate"] * (1 - dfin["r"] ** dfin["Optimum_Ads_um"])
+    dfin["Profit From Loc"] = (1 / (1 - dfin["r"])) * dfin["True Sales Rate"] * (1 - dfin["r"] ** dfin["Optimum_Ads_Num"])
 
     #Then we get our origional data frame from the excel sheet again
     dforigional = pd.read_excel(r'C:\Users\will simpkins\Documents\Engineering Mathematics\Term 2\data\client_a_data_workr.xlsx')
@@ -211,4 +214,4 @@ def present_df(dfa,M):
 
 #Then we return this data frame to a new excel sheet
 dfinal = present_df(dfr,M)
-dfinal.to_excel(r'C:\Users\will simpkins\Documents\Engineering Mathematics\Term 2\data\datafinalR.xlsx', index=False)
+dfinal.to_excel(r'C:\Users\will simpkins\Documents\Engineering Mathematics\Term 2\data\datafinalaR.xlsx', index=False)
